@@ -1,15 +1,71 @@
-# fast-deep-equal
+# @fitzyracing/fast-deep-equal
 The fastest deep equal with ES6 Map, Set and Typed arrays support.
 
-[![Build Status](https://travis-ci.org/epoberezkin/fast-deep-equal.svg?branch=master)](https://travis-ci.org/epoberezkin/fast-deep-equal)
-[![npm](https://img.shields.io/npm/v/fast-deep-equal.svg)](https://www.npmjs.com/package/fast-deep-equal)
-[![Coverage Status](https://coveralls.io/repos/github/epoberezkin/fast-deep-equal/badge.svg?branch=master)](https://coveralls.io/github/epoberezkin/fast-deep-equal?branch=master)
+[![npm](https://img.shields.io/npm/v/@fitzyracing/fast-deep-equal.svg)](https://www.npmjs.com/package/@fitzyracing/fast-deep-equal)
+
+> **This is a fork of [fast-deep-equal](https://github.com/epoberezkin/fast-deep-equal)
+> by [Evgeny Poberezkin](https://github.com/epoberezkin)**, published as a drop-in
+> replacement that fixes long-standing bugs. The upstream package has not been
+> released since v3.1.3 (June 2020), and the community pull requests that fix
+> these bugs have not been merged. All credit for the original library goes to
+> its author and contributors; it remains available under the same MIT license.
+
+
+## What's fixed in this fork
+
+Based on upstream `fast-deep-equal@3.1.3`; the API is unchanged.
+
+- **No more `TypeError: a.valueOf is not a function` for objects with a null
+  prototype** (`Object.create(null)`), e.g. results returned by `graphql-js` or
+  `Object.groupBy`. Two null-prototype objects are now compared by their keys and
+  values. (A null-prototype object and a plain `{}` are still not equal, as in
+  upstream, because their prototypes differ.)
+  Upstream issues: [#49](https://github.com/epoberezkin/fast-deep-equal/issues/49),
+  [#111](https://github.com/epoberezkin/fast-deep-equal/issues/111);
+  unmerged PRs: [#134](https://github.com/epoberezkin/fast-deep-equal/pull/134),
+  [#142](https://github.com/epoberezkin/fast-deep-equal/pull/142).
+- **No more `TypeError: a.toString is not a function` / `a.valueOf is not a
+  function` for plain data objects that have a property named `toString` or
+  `valueOf`** (for example Jira changelog items: `{ fromString: 'To Do', toString: 'In Progress' }`).
+  These objects are now compared key by key, in either argument order.
+  Upstream issues: [#141](https://github.com/epoberezkin/fast-deep-equal/issues/141),
+  [#49](https://github.com/epoberezkin/fast-deep-equal/issues/49) (comment by @moander).
+- **Two invalid dates are now equal** (`equal(new Date('foo'), new Date('bar')) === true`),
+  consistent with how this library already treats `NaN` and with `lodash.isEqual`.
+  Upstream issue: [#138](https://github.com/epoberezkin/fast-deep-equal/issues/138).
+- **TypeScript: `index.d.ts` is now a proper module declaration**, so types resolve
+  under the scoped package name (upstream declared an ambient
+  `declare module 'fast-deep-equal'`, which does not match a renamed package).
+  Related upstream issue: [#81](https://github.com/epoberezkin/fast-deep-equal/issues/81).
 
 
 ## Install
 
 ```bash
-npm install fast-deep-equal
+npm install @fitzyracing/fast-deep-equal
+```
+
+### Using it as a drop-in replacement
+
+`fast-deep-equal` is mostly installed as a transitive dependency (e.g. via `ajv`).
+To make your whole dependency tree use this fork without changing any code,
+add an override to your `package.json`:
+
+```json
+{
+  "overrides": {
+    "fast-deep-equal": "npm:@fitzyracing/fast-deep-equal@^3.1.4"
+  }
+}
+```
+
+(Yarn: use `"resolutions"`; pnpm: `"pnpm": { "overrides": { ... } }`. Tested with npm 9.9, 10 and 11;
+very early npm 9 releases such as 9.2.0 reject aliased overrides with "Invalid comparator", so upgrade npm if you see that.)
+
+Or alias it directly in your own dependencies, so `require('fast-deep-equal')` keeps working:
+
+```bash
+npm install fast-deep-equal@npm:@fitzyracing/fast-deep-equal
 ```
 
 
@@ -19,7 +75,7 @@ npm install fast-deep-equal
 - works in node.js (8+) and browsers (IE9+)
 - checks equality of Date and RegExp objects by value.
 
-ES6 equal (`require('fast-deep-equal/es6')`) also supports:
+ES6 equal (`require('@fitzyracing/fast-deep-equal/es6')`) also supports:
 - Maps
 - Sets
 - Typed arrays
@@ -28,14 +84,14 @@ ES6 equal (`require('fast-deep-equal/es6')`) also supports:
 ## Usage
 
 ```javascript
-var equal = require('fast-deep-equal');
+var equal = require('@fitzyracing/fast-deep-equal');
 console.log(equal({foo: 'bar'}, {foo: 'bar'})); // true
 ```
 
 To support ES6 Maps, Sets and Typed arrays equality use:
 
 ```javascript
-var equal = require('fast-deep-equal/es6');
+var equal = require('@fitzyracing/fast-deep-equal/es6');
 console.log(equal(Int16Array([1, 2]), Int16Array([1, 2]))); // true
 ```
 
@@ -44,14 +100,14 @@ property that contains circular references and is not needed when
 comparing the elements - borrowed from [react-fast-compare](https://github.com/FormidableLabs/react-fast-compare)):
 
 ```javascript
-var equal = require('fast-deep-equal/react');
-var equal = require('fast-deep-equal/es6/react');
+var equal = require('@fitzyracing/fast-deep-equal/react');
+var equal = require('@fitzyracing/fast-deep-equal/es6/react');
 ```
 
 
 ## Performance benchmark
 
-Node.js v12.6.0:
+Upstream results (fast-deep-equal 3.1.3), Node.js v12.6.0:
 
 ```
 fast-deep-equal x 261,950 ops/sec ±0.52% (89 runs sampled)
@@ -79,18 +135,16 @@ npm run benchmark
 __Please note__: this benchmark runs against the available test cases. To choose the most performant library for your application, it is recommended to benchmark against your data and to NOT expect this benchmark to reflect the performance difference in your application.
 
 
-## Enterprise support
-
-fast-deep-equal package is a part of [Tidelift enterprise subscription](https://tidelift.com/subscription/pkg/npm-fast-deep-equal?utm_source=npm-fast-deep-equal&utm_medium=referral&utm_campaign=enterprise&utm_term=repo) - it provides a centralised commercial support to open-source software users, in addition to the support provided by software maintainers.
-
-
 ## Security contact
 
-To report a security vulnerability, please use the
-[Tidelift security contact](https://tidelift.com/security).
-Tidelift will coordinate the fix and disclosure. Please do NOT report security vulnerability via GitHub issues.
+To report a security vulnerability in this fork, please use
+[GitHub private vulnerability reporting](https://github.com/fitzyracing1/fast-deep-equal/security/advisories/new)
+rather than a public issue.
 
 
 ## License
 
-[MIT](https://github.com/epoberezkin/fast-deep-equal/blob/master/LICENSE)
+[MIT](./LICENSE) - Copyright (c) 2017 Evgeny Poberezkin. The original license and
+copyright notice are retained unchanged; fork changes are released under the same license.
+
+Original project: https://github.com/epoberezkin/fast-deep-equal

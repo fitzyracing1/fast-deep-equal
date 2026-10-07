@@ -302,6 +302,18 @@ module.exports = [
         value1: new Date('2017-06-16T21:36:48.362Z'),
         value2: {},
         equal: false
+      },
+      {
+        description: 'invalid dates are equal (issue #138)',
+        value1: new Date('foo'),
+        value2: new Date('bar'),
+        equal: true
+      },
+      {
+        description: 'invalid date and valid date are not equal (issue #138)',
+        value1: new Date('foo'),
+        value2: new Date(2017, 5, 16),
+        equal: false
       }
     ]
   },
@@ -358,6 +370,106 @@ module.exports = [
     ]
   },
   {
+    description: 'objects with null prototype (issues #49, #111)',
+    tests: [
+      {
+        description: 'empty objects with null prototype are equal',
+        value1: nullProto({}),
+        value2: nullProto({}),
+        equal: true
+      },
+      {
+        description: 'equal objects with null prototype',
+        value1: nullProto({a: 1, b: '2'}),
+        value2: nullProto({b: '2', a: 1}),
+        equal: true
+      },
+      {
+        description: 'not equal objects with null prototype (different values)',
+        value1: nullProto({a: 1}),
+        value2: nullProto({a: 2}),
+        equal: false
+      },
+      {
+        description: 'not equal objects with null prototype (different keys)',
+        value1: nullProto({a: 1}),
+        value2: nullProto({b: 1}),
+        equal: false
+      },
+      {
+        description: 'equal nested objects with null prototype (e.g. graphql-js results)',
+        value1: nullProto({data: nullProto({user: nullProto({id: 1, tags: ['x']})})}),
+        value2: nullProto({data: nullProto({user: nullProto({id: 1, tags: ['x']})})}),
+        equal: true
+      },
+      {
+        description: 'not equal nested objects with null prototype',
+        value1: nullProto({data: nullProto({user: nullProto({id: 1})})}),
+        value2: nullProto({data: nullProto({user: nullProto({id: 2})})}),
+        equal: false
+      },
+      {
+        description: 'object with null prototype and plain object are not equal (different prototypes)',
+        value1: nullProto({a: 1}),
+        value2: {a: 1},
+        equal: false
+      }
+    ]
+  },
+  {
+    description: 'objects with non-function valueOf / toString properties (issues #49, #141)',
+    tests: [
+      {
+        description: 'equal objects with toString data property',
+        value1: {field: 'status', fromString: 'To Do', toString: 'In Progress'},
+        value2: {field: 'status', fromString: 'To Do', toString: 'In Progress'},
+        equal: true
+      },
+      {
+        description: 'not equal objects with toString data property',
+        value1: {field: 'status', toString: 'In Progress'},
+        value2: {field: 'status', toString: 'Done'},
+        equal: false
+      },
+      {
+        description: 'equal objects with valueOf data property',
+        value1: {valueOf: 1},
+        value2: {valueOf: 1},
+        equal: true
+      },
+      {
+        description: 'object with valueOf data property and empty object are not equal',
+        value1: {valueOf: 'foo'},
+        value2: {},
+        equal: false
+      },
+      {
+        description: 'object with toString data property and empty object are not equal',
+        value1: {toString: 'foo'},
+        value2: {},
+        equal: false
+      },
+      {
+        description: 'valueOf data property vs valueOf method are not equal',
+        value1: {valueOf: 'x'},
+        value2: {valueOf: function() { return 'x'; }},
+        equal: false
+      },
+      {
+        description: 'toString data property vs toString method are not equal',
+        value1: {toString: 'x'},
+        value2: {toString: function() { return 'x'; }},
+        equal: false
+      },
+      {
+        description: 'objects with null-valued valueOf and toString properties are equal',
+        value1: {valueOf: null, toString: null, a: 1},
+        value2: {valueOf: null, toString: null, a: 1},
+        equal: true
+      }
+    ]
+  },
+  {
     description: 'sample objects',
     tests: [
       {
@@ -398,3 +510,9 @@ module.exports = [
 
 function func1() {}
 function func2() {}
+
+function nullProto(obj) {
+  var o = Object.create(null);
+  for (var key in obj) o[key] = obj[key];
+  return o;
+}

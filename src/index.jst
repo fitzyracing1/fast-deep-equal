@@ -48,8 +48,17 @@ module.exports = function equal(a, b) {
 {{?}}
 
     if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+    // Only call valueOf/toString when both are real methods: objects with null
+    // prototype (Object.create(null)) don't have them, and plain data objects
+    // may have own non-function properties named "valueOf" or "toString".
+    // Such objects are compared by their keys below.
+    if (a.valueOf !== Object.prototype.valueOf && typeof a.valueOf == 'function' && typeof b.valueOf == 'function') {
+      var aValue = a.valueOf(), bValue = b.valueOf();
+      // true if both NaN (e.g. two invalid dates), same as for primitives
+      return aValue === bValue || (aValue !== aValue && bValue !== bValue);
+    }
+    if (a.toString !== Object.prototype.toString && typeof a.toString == 'function' && typeof b.toString == 'function')
+      return a.toString() === b.toString();
 
     keys = Object.keys(a);
     length = keys.length;
