@@ -1,4 +1,7 @@
 # @fitzyracing/fast-deep-equal
+
+> Part of **[360 Bench](https://github.com/fitzyracing1/360-bench)**, tested fixes for abandoned npm packages.
+
 The fastest deep equal with ES6 Map, Set and Typed arrays support.
 
 [![npm](https://img.shields.io/npm/v/@fitzyracing/fast-deep-equal.svg)](https://www.npmjs.com/package/@fitzyracing/fast-deep-equal)
