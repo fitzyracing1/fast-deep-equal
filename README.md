@@ -151,3 +151,8 @@ rather than a public issue.
 copyright notice are retained unchanged; fork changes are released under the same license.
 
 Original project: https://github.com/epoberezkin/fast-deep-equal
+
+## Documentation
+
+- In-repo docs: [docs/](docs/index.md)
+- Wiki: [https://github.com/fitzyracing1/fast-deep-equal/wiki](https://github.com/fitzyracing1/fast-deep-equal/wiki)
