@@ -1,6 +1,6 @@
 {
   "name": "@fitzyracing/fast-deep-equal",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Fast deep equal (maintained fork of fast-deep-equal with bug fixes)",
   "main": "index.js",
   "scripts": {
